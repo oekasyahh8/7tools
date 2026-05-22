@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pareto Diagram - Diagnostic Analysis</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a0ca3;
+            --success: #2dc653;
+            --danger: #ef233c;
+            --warning: #fca311;
+            --warning-hover: #d97706;
+            --bg-color: #f4f7fe;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #8d99ae;
+            --border-color: #e2e8f0;
+        }
+
+        body.dark-mode {
+            --bg: #0f172a;
+            --text: #f8fafc; 
+            --text-muted: #cbd5e1;
+            --card-bg: #1e293b;
+            --result-bg: #0f172a;
+            --border-color: #334155;
+            --input-bg: #020617;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            padding: 8px 20px; 
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0; 
+            z-index: 10;
+            position: relative; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header-title { font-size: 18px; font-weight: 600; }
+
+        .live-time {
+            position: absolute;
+            left: 20px;
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .header-controls {
+            position: absolute;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-header:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.05); }
+
+        .main-wrapper {
+            flex: 1; 
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            min-height: 0; 
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+            min-height: 0;
+            transition: all 0.5s ease;
+        }
+
+        .panel-title {
+            font-size: 16px; font-weight: 600; margin-bottom: 10px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+
+        .inputs-wrapper {
+            flex: 1; min-height: 0; overflow-y: auto; padding-right: 5px; margin-bottom: 10px;
+        }
+        .inputs-wrapper::-webkit-scrollbar { width: 5px; }
+        .inputs-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+        .input-header { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center;}
+
+        .data-input {
+            width: 100%; padding: 6px 8px; border-radius: 6px; background: var(--bg-color);
+            border: 1px solid var(--border-color); color: var(--text-main);
+            font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500;
+        }
+        .data-input.num { text-align: center; font-weight: 600; }
+        .data-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15); background: var(--card-bg); }
+
+        .button-group { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        button {
+            padding: 10px; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 12px; 
+            transition: all 0.15s; display: flex; justify-content: center; align-items: center; gap: 5px; width: 100%; color: white;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-random { background-color: var(--warning); color: #111827; }
+        .btn-random:hover { background-color: var(--warning-hover); }
+        .btn-reset { background-color: var(--danger); }
+        .btn-export { background-color: var(--primary); }
+        .btn-export:hover { background-color: var(--primary-hover); }
+
+        .color-picker-container { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color); text-align: center; flex-shrink: 0; }
+        .color-picker-container p { font-size: 10.5px; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
+        .color-options { display: flex; justify-content: center; gap: 6px; }
+        .color-circle { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); transition: transform 0.2s; }
+        .color-circle:hover { transform: scale(1.2); }
+
+        .right-panel { display: flex; flex-direction: column; gap: 15px; min-height: 0; min-width: 0; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; flex-shrink: 0; }
+        .stat-box { background: var(--card-bg); border-left: 4px solid var(--primary); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .stat-box.highlight { border-left-color: var(--warning); }
+        .stat-title { display: flex; align-items: center; font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
+        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+
+        .tooltip-container { position: relative; display: inline-flex; align-items: center; margin-left: 4px; cursor: help; }
+        .tooltip-icon {
+            background: var(--primary); color: #ffffff; 
+            border-radius: 50%; width: 12px; height: 12px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: bold; text-transform: none;
+        }
+        .tooltip-text {
+            visibility: hidden; opacity: 0; width: 220px;
+            background-color: #111827; color: #ffffff; 
+            text-align: center; border-radius: 6px; padding: 10px;
+            position: absolute; z-index: 100; bottom: 150%; left: 50%;
+            transform: translateX(-50%); transition: opacity 0.3s;
+            font-size: 11px; font-weight: 500; line-height: 1.4; pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-transform: none; border: 1px solid #374151;
+        }
+        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .tooltip-text::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: #111827 transparent transparent transparent;
+        }
+        body.dark-mode .tooltip-text { background-color: #ffffff; color: #111827; border-color: #e2e8f0; }
+        body.dark-mode .tooltip-text::after { border-color: #ffffff transparent transparent transparent; }
+
+        .chart-wrapper { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 15px; width: 100%; overflow: hidden; }
+        .chart-container { position: relative; flex: 1; min-height: 0; width: 100%; overflow: hidden; }
+
+        .conclusion-box { 
+            flex-shrink: 0; max-height: 160px; overflow-y: auto; 
+            padding: 12px 15px; border-radius: 10px; border-left: 4px solid var(--border-color); background: var(--bg-color); border-right: 1px solid var(--border-color); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); 
+        }
+        .conclusion-box::-webkit-scrollbar { width: 4px; }
+        .conclusion-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .conclusion-title { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .conclusion-text { font-size: 12px; color: var(--text-main); line-height: 1.5; font-weight: 500; }
+        
+        .issues-list { margin: 8px 0 0 0; padding-left: 15px; font-size: 12px; }
+        .issues-list li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
+        .issues-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .issue-title { color: var(--danger); font-weight: 700; display: block; margin-bottom: 3px; }
+        .investigation-box { background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 6px; font-size: 11px; color: var(--text-main); display: flex; gap: 6px; margin-top: 6px; align-items: flex-start;}
+        
+        .conclusion-box.success { border-left-color: var(--success); background-color: rgba(45, 198, 83, 0.05); }
+        .conclusion-box.success .conclusion-title { color: var(--success); }
+        .conclusion-box.danger { border-left-color: var(--danger); background-color: rgba(239, 35, 60, 0.05); }
+        .conclusion-box.danger .conclusion-title { color: var(--danger); }
+        .conclusion-box.warning { border-left-color: var(--warning); background-color: rgba(245, 158, 11, 0.05); }
+        .conclusion-box.warning .conclusion-title { color: var(--warning); }
+
+        body.export-mode header, body.export-mode #control-buttons, body.export-mode #color-picker { display: none !important; }
+        body.export-mode { height: auto !important; overflow: visible !important; }
+        body.export-mode .main-wrapper { height: auto !important; padding: 25px !important; align-items: flex-start; }
+        body.export-mode .card, body.export-mode .right-panel { height: auto !important; overflow: visible !important; }
+        body.export-mode .inputs-wrapper { overflow: visible !important; max-height: none !important; }
+        body.export-mode .chart-wrapper { min-height: 450px !important; height: 450px !important; flex: none; }
+        body.export-mode .conclusion-box { max-height: none !important; overflow: visible !important; padding: 15px !important; }
+        body.export-mode .tooltip-container { display: none !important; }
+        
+        @media(max-width: 992px) { 
+            body { height: auto; overflow-y: auto; }
+            header { flex-direction: column; padding: 10px; gap: 5px; height: auto; border-radius: 0 0 12px 12px; margin-bottom: 10px;}
+            .live-time { position: static; order: -1; }
+            .header-controls { position: static; right: auto; }
+            .main-wrapper { grid-template-columns: 1fr; } 
+            .inputs-wrapper { max-height: 250px; }
+            .chart-wrapper { min-height: 350px; flex: none; }
+            .conclusion-box { max-height: none; overflow: visible; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body id="app-body">
+
+<header>
+    <div id="live-time" class="live-time">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span id="live-time-text">-</span>
+    </div>
+    <div class="header-title">Pareto Chart & Diagnostic Analysis</div>
+    <div class="header-controls">
+        <a href="dashboard.html" class="btn-header" title="Kembali ke Home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </a>
+    </div>
+</header>
+
+<div class="main-wrapper" id="capture-area">
+    
+    <div class="card left-panel">
+        <div class="panel-title">✍️ Data Kategori <span style="font-size: 10px; font-weight: normal; color: var(--text-muted); margin-left: 5px;">(Paste Excel)</span></div>
+        <div class="input-header">
+            <div>Kategori / Masalah</div>
+            <div>Frekuensi</div>
+        </div>
+        <div class="inputs-wrapper">
+            <div class="inputs" id="inputContainer" style="display: flex; flex-direction: column;"></div>
+        </div>
+        
+        <div class="button-group" id="control-buttons">
+            <button class="btn-random" onclick="randomizeData()">🎲 Acak Data</button>
+            <button class="btn-reset" onclick="resetData()">🗑️ Reset Semua</button>
+            <button class="btn-export" id="exportBtn" onclick="exportFullPage()">📸 Export Laporan</button>
+        </div>
+
+        <div class="color-picker-container" id="color-picker">
+            <p>Tema Latar:</p>
+            <div class="color-options">
+                <div class="color-circle" style="background: #f8f9fa;" onclick="changeBgColor('#f8f9fa')" title="Terang"></div>
+                <div class="color-circle" style="background: #2b2d42;" onclick="changeBgColor('#2b2d42')" title="Gelap Malam"></div>
+                <div class="color-circle" style="background: #e0fbfc;" onclick="changeBgColor('#e0fbfc')" title="Biru Es"></div>
+                <div class="color-circle" style="background: #d8f3dc;" onclick="changeBgColor('#d8f3dc')" title="Hijau Mint"></div>
+                <div class="color-circle" style="background: #ffe5d9;" onclick="changeBgColor('#ffe5d9')" title="Peach Soft"></div>
+                <div class="color-circle" style="background: #7b2cbf;" onclick="changeBgColor('#7b2cbf')" title="Ungu Elegan"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-title">Total Keseluruhan</div>
+                <div class="stat-value" id="val-total">0</div>
+            </div>
+            <div class="stat-box highlight">
+                <div class="stat-title">Masalah Dominan
+                    <span class="tooltip-container">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip-text">Kategori dengan frekuensi kemunculan paling tinggi.</span>
+                    </span>
+                </div>
+                <div class="stat-value" id="val-dominant" style="color: var(--warning)">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Jumlah Kategori</div>
+                <div class="stat-value" id="val-count">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Rasio Vital Few (80%)
+                    <span class="tooltip-container">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip-text">Persentase jumlah kategori yang menyumbang kumulatif ~80% dari total masalah. Sesuai prinsip Pareto.</span>
+                    </span>
+                </div>
+                <div class="stat-value" id="val-ratio" style="color: var(--primary)">0%</div>
+            </div>
+        </div>
+
+        <div class="chart-wrapper card">
+            <div class="panel-title" style="margin-bottom: 5px; border: none; padding: 0;">📈 Visualisasi Pareto Chart</div>
+            <div class="chart-container">
+                <canvas id="paretoChart"></canvas>
+            </div>
+        </div>
+
+        <div class="conclusion-box" id="conclusionBox">
+            <div class="conclusion-title" id="conclusionIcon">💡 Menunggu Data</div>
+            <div class="conclusion-text" id="conclusionText">
+                Silakan input data observasi kategori dan frekuensi untuk memuat rekomendasi Root Cause Analysis (RCA).
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- JAM LIVE SCRIPT ---
+    function updateLiveTime() {
+        const now = new Date();
+        const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
+        const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][now.getMonth()];
+        const tanggal = now.getDate();
+        const tahun = now.getFullYear();
+        const jam = String(now.getHours()).padStart(2, '0');
+        const menit = String(now.getMinutes()).padStart(2, '0');
+        const detik = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('live-time-text').innerText = `${hari}, ${tanggal} ${bulan} ${tahun} | ${jam}:${menit}:${detik}`;
+    }
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
+
+    // --- VARIABEL ANIMASI ---
+    let originalFrequencies = [];
+    let originalPercents = [];
+    let floatAnimationTime = 0;
+    let floatInterval = null;
+
+    // --- INISIALISASI INPUT ---
+    const inputContainer = document.getElementById("inputContainer");
+    const maxRows = 10;
+
+    for(let i = 1; i <= maxRows; i++) {
+        let row = document.createElement("div");
+        row.className = "input-row";
+
+        let labelInput = document.createElement("input");
+        labelInput.type = "text";
+        labelInput.className = "data-input";
+        labelInput.placeholder = "Kategori " + i;
+        labelInput.oninput = updateChart;
+
+        let freqInput = document.createElement("input");
+        freqInput.type = "number";
+        freqInput.className = "data-input num";
+        freqInput.placeholder = "0";
+        freqInput.min = "0";
+        freqInput.oninput = updateChart;
+
+        row.appendChild(labelInput);
+        row.appendChild(freqInput);
+        inputContainer.appendChild(row);
+    }
+
+    // --- FITUR COPY-PASTE EXCEL ---
+    inputContainer.addEventListener('paste', function(e) {
+        e.preventDefault();
+        let pasteData = (e.clipboardData || window.clipboardData).getData('text');
+        
+        // Memisahkan baris berdasarkan newline
+        let rows = pasteData.split(/[\n]+/).map(row => row.trim()).filter(row => row !== "");
+        let inputRows = document.querySelectorAll(".input-row");
+        
+        // Cari lokasi paste target (baris ke berapa)
+        let targetRow = e.target.closest('.input-row');
+        let startIndex = Array.from(inputRows).indexOf(targetRow);
+        if(startIndex === -1) startIndex = 0;
+
+        let rIndex = 0;
+        while(startIndex < inputRows.length && rIndex < rows.length) {
+            // Memisahkan kolom berdasarkan tab (Excel) atau koma
+            let cols = rows[rIndex].split(/[\t,]+/).map(col => col.trim());
+            let inputs = inputRows[startIndex].querySelectorAll('input');
+            
+            if(cols[0]) inputs[0].value = cols[0];
+            if(cols[1] && !isNaN(parseFloat(cols[1]))) inputs[1].value = parseFloat(cols[1]);
+            
+            startIndex++;
+            rIndex++;
+        }
+        updateChart();
+    });
+
+    // --- SETUP CHART ---
+    const ctx = document.getElementById("paretoChart").getContext("2d");
+    Chart.defaults.animation = false;
+
+    let paretoChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'Kumulatif (%)',
+                    data: [],
+                    borderColor: '#ef233c',
+                    backgroundColor: '#ef233c',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    yAxisID: 'y1',
+                    order: 1
+                },
+                {
+                    type: 'bar',
+                    label: 'Frekuensi',
+                    data: [],
+                    backgroundColor: '#4361ee',
+                    borderRadius: 4,
+                    yAxisID: 'y',
+                    order: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { color: '#111827', usePointStyle: true, boxWidth: 8, font: {family: 'Poppins', size: 11} } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, cornerRadius: 8, titleFont: {family: 'Poppins', size: 12}, bodyFont: {family: 'Poppins', size: 11},
+                    callbacks: {
+                        label: function(context) {
+                            if(context.datasetIndex === 0) {
+                                let origY = originalPercents[context.dataIndex];
+                                return `Kumulatif: ${origY !== undefined ? origY.toFixed(1) + '%' : ''}`;
+                            } else {
+                                let origY = originalFrequencies[context.dataIndex];
+                                return `Frekuensi: ${origY !== undefined ? origY : ''}`;
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { color: '#111827', font: {family: 'Poppins', size: 10}, maxRotation: 45, minRotation: 0 } 
+                },
+                y: { 
+                    type: 'linear', position: 'left', 
+                    title: { display: true, text: 'Frekuensi', font: {family: 'Poppins', size: 11}, color: '#4b5563' },
+                    grid: { color: 'rgba(0,0,0,0.05)', borderDash: [4, 4] }, 
+                    ticks: { color: '#111827', font: {family: 'Poppins', size: 10}, beginAtZero: true } 
+                },
+                y1: { 
+                    type: 'linear', position: 'right', 
+                    title: { display: true, text: 'Persentase (%)', font: {family: 'Poppins', size: 11}, color: '#4b5563' },
+                    grid: { drawOnChartArea: false }, 
+                    ticks: { color: '#111827', font: {family: 'Poppins', size: 10}, min: 0, max: 100, stepSize: 20, callback: function(value) { return value + "%" } } 
+                }
+            }
+        }
+    });
+
+    // --- ANIMASI FLOATING ---
+    function startFloatingEffect() {
+        if(floatInterval) clearInterval(floatInterval);
+        if(originalFrequencies.length === 0) return;
+
+        floatInterval = setInterval(() => {
+            floatAnimationTime += 0.1;
+            
+            // Animasi bar: nafas dikit (max +/- 1% dari tinggi bar)
+            let floatingFreq = originalFrequencies.map((val, index) => {
+                return val + Math.sin(floatAnimationTime + index) * (val * 0.015);
+            });
+
+            // Animasi line point: radius denyut
+            let pulsingRadii = originalPercents.map((val, index) => {
+                return 4 + Math.sin(floatAnimationTime + index) * 1.5;
+            });
+
+            paretoChart.data.datasets[1].data = floatingFreq; // Bar freq
+            paretoChart.data.datasets[0].pointRadius = pulsingRadii; // Line radius
+            
+            paretoChart.update('none'); 
+        }, 50);
+    }
+
+    function updateChart() {
+        let inputRows = document.querySelectorAll(".input-row");
+        let rawData = [];
+
+        inputRows.forEach(row => {
+            let label = row.children[0].value.trim();
+            let freqStr = row.children[1].value;
+            let freq = parseFloat(freqStr);
+            
+            if(freqStr !== "" && !isNaN(freq) && freq > 0) {
+                rawData.push({ label: label === "" ? "Tanpa Nama" : label, freq: freq });
+            }
+        });
+
+        if(rawData.length === 0) {
+            resetStats();
+            paretoChart.data.labels = [];
+            paretoChart.data.datasets[0].data = [];
+            paretoChart.data.datasets[1].data = [];
+            if(floatInterval) clearInterval(floatInterval);
+            paretoChart.update('none');
+            updateConclusion(rawData, 0);
+            return;
+        }
+
+        // Sorting Pareto (Besar ke Kecil)
+        rawData.sort((a, b) => b.freq - a.freq);
+
+        let totalFreq = rawData.reduce((sum, item) => sum + item.freq, 0);
+        let labels = [];
+        let freqs = [];
+        let cumPercents = [];
+        let cumSum = 0;
+
+        rawData.forEach(item => {
+            labels.push(item.label);
+            freqs.push(item.freq);
+            cumSum += item.freq;
+            cumPercents.push((cumSum / totalFreq) * 100);
+        });
+
+        originalFrequencies = [...freqs];
+        originalPercents = [...cumPercents];
+
+        // Update Stats
+        document.getElementById("val-total").innerText = totalFreq.toLocaleString();
+        document.getElementById("val-dominant").innerText = labels[0];
+        document.getElementById("val-count").innerText = rawData.length;
+
+        // Vital Few Ratio: Berapa % dari item yg mencakup ~80% masalah
+        let vitalCount = cumPercents.filter(p => p <= 80).length;
+        if(vitalCount === 0 && rawData.length > 0) vitalCount = 1; // Minimal 1
+        let ratio = (vitalCount / rawData.length) * 100;
+        document.getElementById("val-ratio").innerText = ratio.toFixed(0) + "%";
+
+        // Konfigurasi sumbu Y kiri (maksimum diset sama dengan total)
+        paretoChart.options.scales.y.max = totalFreq;
+
+        paretoChart.data.labels = labels;
+        paretoChart.data.datasets[1].data = freqs; // Bar
+        paretoChart.data.datasets[0].data = cumPercents; // Line
+
+        startFloatingEffect();
+        updateConclusion(rawData, totalFreq, cumPercents);
+    }
+
+    function analyzePareto(data, totalFreq, cumPercents) {
+        let issues = [];
+        
+        let vitalFewData = [];
+        let vitalIdx = 0;
+        
+        while (vitalIdx < data.length && (vitalIdx === 0 || cumPercents[vitalIdx-1] < 80)) {
+            vitalFewData.push(data[vitalIdx].label);
+            vitalIdx++;
+        }
+
+        let vitalPercentage = cumPercents[vitalIdx - 1];
+
+        if (vitalFewData.length > 0) {
+            issues.push(`
+                <span class="issue-title">1. Identifikasi "Vital Few" (Prinsip 80/20)</span>
+                Fokuskan perbaikan utama pada masalah: <b>${vitalFewData.join(', ')}</b>. Kelompok masalah ini menyumbang secara kumulatif sebesar <b>${vitalPercentage.toFixed(1)}%</b> dari total permasalahan.
+                <div class="investigation-box">
+                    <span class="investigation-icon">🎯</span>
+                    <div><strong>Aksi:</strong> Prioritaskan *brainstorming* (misal dengan Fishbone Diagram) dan perbaikan (*Countermeasure*) pada area ini untuk mendapatkan dampak efisiensi terbesar.</div>
+                </div>
+            `);
+        }
+
+        if (data.length > 3) {
+            let trivialManyCount = data.length - vitalFewData.length;
+            issues.push(`
+                <span class="issue-title">2. Kategori "Trivial Many"</span>
+                Terdapat ${trivialManyCount} kategori masalah lain yang kontribusinya relatif kecil.
+                <div class="investigation-box">
+                    <span class="investigation-icon">⏳</span>
+                    <div><strong>Aksi:</strong> Masalah ini dapat ditunda penyelesaiannya sampai "Vital Few" berhasil diatasi. Cukup lakukan monitoring standar.</div>
+                </div>
+            `);
+        }
+
+        return issues;
+    }
+
+    function updateConclusion(data, totalFreq, cumPercents) {
+        const box = document.getElementById("conclusionBox");
+        const icon = document.getElementById("conclusionIcon");
+        const text = document.getElementById("conclusionText");
+
+        box.classList.remove('success', 'danger', 'warning');
+
+        if (data.length === 0) {
+            icon.innerHTML = "💡 Menunggu Data";
+            text.innerHTML = "Silakan input data observasi kategori dan frekuensi untuk memuat rekomendasi Root Cause Analysis (RCA).";
+            return;
+        }
+
+        let issues = analyzePareto(data, totalFreq, cumPercents);
+
+        box.classList.add('success');
+        icon.innerHTML = "✅ Analisis Pareto Tersedia";
+        
+        let issuesHTML = `<ul class="issues-list">`;
+        issues.forEach(issue => { issuesHTML += `<li>${issue}</li>`; });
+        issuesHTML += `</ul>`;
+
+        text.innerHTML = `Sistem telah mengurutkan masalah berdasarkan prioritas: ${issuesHTML}`;
+    }
+
+    function randomizeData() {
+        let inputRows = document.querySelectorAll(".input-row");
+        const categories = ["Goresan", "Penyok", "Retak", "Kotor", "Dimensi NG", "Bocor", "Cat Mengelupas", "Burr", "Karat", "Lain-lain"];
+        
+        // Acak jumlah data yang mau diisi (5 sampai 10)
+        let numData = Math.floor(Math.random() * 6) + 5;
+        
+        inputRows.forEach((row, i) => {
+            if(i < numData) {
+                row.children[0].value = categories[i];
+                // Random frekuensi (bikin variatif biar paretosnya bagus)
+                let base = Math.floor(Math.random() * 100) + 10;
+                row.children[1].value = base;
+            } else {
+                row.children[0].value = "";
+                row.children[1].value = "";
+            }
+        });
+        updateChart();
+    }
+
+    function resetStats() {
+        document.getElementById("val-total").innerText = "0";
+        document.getElementById("val-dominant").innerText = "-";
+        document.getElementById("val-count").innerText = "0";
+        document.getElementById("val-ratio").innerText = "0%";
+    }
+
+    function resetData() {
+        document.querySelectorAll(".input-row input").forEach(input => input.value = "");
+        resetStats();
+        originalFrequencies = [];
+        originalPercents = [];
+        if(floatInterval) clearInterval(floatInterval);
+        paretoChart.data.labels = [];
+        paretoChart.data.datasets.forEach(ds => ds.data = []);
+        delete paretoChart.options.scales.y.max;
+        paretoChart.update('none');
+
+        const box = document.getElementById("conclusionBox");
+        box.classList.remove('success', 'danger', 'warning');
+        document.getElementById("conclusionIcon").innerHTML = "💡 Menunggu Data";
+        document.getElementById("conclusionText").innerHTML = "Silakan input data observasi kategori dan frekuensi untuk memuat rekomendasi Root Cause Analysis (RCA).";
+    }
+
+    function changeBgColor(colorHex) {
+        document.body.style.backgroundColor = colorHex;
+        let isDark = (colorHex === '#2b2d42' || colorHex === '#7b2cbf');
+        
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+            paretoChart.options.scales.x.ticks.color = '#f8fafc';
+            paretoChart.options.scales.y.ticks.color = '#f8fafc';
+            paretoChart.options.scales.y1.ticks.color = '#f8fafc';
+            paretoChart.options.scales.y.grid.color = 'rgba(255, 255, 255, 0.15)';
+            paretoChart.options.scales.y.title.color = '#cbd5e1';
+            paretoChart.options.scales.y1.title.color = '#cbd5e1';
+            paretoChart.options.plugins.legend.labels.color = '#f8fafc';
+        } else {
+            document.body.classList.remove('dark-mode');
+            paretoChart.options.scales.x.ticks.color = '#111827';
+            paretoChart.options.scales.y.ticks.color = '#111827';
+            paretoChart.options.scales.y1.ticks.color = '#111827';
+            paretoChart.options.scales.y.grid.color = 'rgba(0, 0, 0, 0.05)';
+            paretoChart.options.scales.y.title.color = '#4b5563';
+            paretoChart.options.scales.y1.title.color = '#4b5563';
+            paretoChart.options.plugins.legend.labels.color = '#111827';
+        }
+        paretoChart.update('none');
+    }
+
+    function exportFullPage() {
+        const exportBtn = document.getElementById("exportBtn");
+        const originalText = exportBtn.innerHTML;
+        exportBtn.innerHTML = "📸 Memproses...";
+        exportBtn.disabled = true;
+
+        if(floatInterval) clearInterval(floatInterval);
+        
+        // Restore asli
+        paretoChart.data.datasets[1].data = originalFrequencies;
+        paretoChart.data.datasets[0].pointRadius = 4;
+        paretoChart.update('none');
+
+        document.body.classList.add('export-mode');
+        paretoChart.resize();
+
+        setTimeout(() => {
+            html2canvas(document.body, {
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: window.getComputedStyle(document.body).backgroundColor,
+            }).then(canvas => {
+                document.body.classList.remove('export-mode');
+                paretoChart.resize();
+                
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+
+                let link = document.createElement('a');
+                link.download = 'Laporan-Pareto-Chart.png';
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+
+                startFloatingEffect();
+            }).catch(err => {
+                document.body.classList.remove('export-mode');
+                paretoChart.resize();
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+                alert("Gagal export gambar.");
+                startFloatingEffect();
+            });
+        }, 500); 
+    }
+</script>
+
+</body>
+</html>
