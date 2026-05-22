@@ -447,11 +447,62 @@
     // --- FUNGSI HISTOGRAM ---
     function generateRandomData() {
         const inputs = document.querySelectorAll("#inputs input");
-        inputs.forEach(input => {
-            let val1 = Math.floor(Math.random() * 91) + 10;
-            let val2 = Math.floor(Math.random() * 91) + 10;
-            input.value = Math.floor((val1 + val2) / 2); 
+        const maxPoints = inputs.length; // 40 points
+        
+        // Pilih tipe proses secara acak:
+        // 0: Kapabel (Proses Baik, Cpk >= 1.33) -> ~40%
+        // 1: Cukup/Rawan (1.0 <= Cpk < 1.33) -> ~30%
+        // 2: Buruk/Tidak Kapabel (Cpk < 1.0) -> ~30%
+        let processType = Math.random();
+        
+        let targetMean, targetStd;
+        
+        if (processType < 0.40) {
+            // 1. PROSES KAPABEL (BAIK)
+            // Mean harus dekat dengan tengah (55), Std Dev harus kecil (sekitar 4 - 5)
+            targetMean = 55 + (Math.random() * 4 - 2); // 53 s/d 57
+            targetStd = 4 + (Math.random() * 1.5);    // 4.0 s/d 5.5
+        } else if (processType < 0.70) {
+            // 2. PROSES CUKUP / RAWAN
+            // Bisa karena std dev agak besar (sekitar 7 - 8) ATAU mean agak bergeser
+            if (Math.random() > 0.5) {
+                targetMean = 55 + (Math.random() * 4 - 2); // Centered
+                targetStd = 7.5 + (Math.random() * 1.0);   // Std dev agak lebar (7.5 - 8.5)
+            } else {
+                targetMean = Math.random() > 0.5 ? 47 + Math.random() * 2 : 63 - Math.random() * 2; // Mean shift
+                targetStd = 5 + (Math.random() * 1.0); // Std dev wajar
+            }
+        } else {
+            // 3. PROSES BURUK / REJECT
+            // Bisa karena std dev besar sekali (>= 12) ATAU mean bergeser ekstrem (< 40 atau > 70)
+            if (Math.random() > 0.5) {
+                targetMean = 55 + (Math.random() * 6 - 3); // Centered
+                targetStd = 12 + (Math.random() * 3);     // Variasi sangat lebar (12 - 15)
+            } else {
+                targetMean = Math.random() > 0.5 ? 35 - Math.random() * 5 : 75 + Math.random() * 5; // Geser ekstrem
+                targetStd = 7 + (Math.random() * 2);      // Variasi normal/sedikit lebar
+            }
+        }
+        
+        // Generate data menggunakan metode Box-Muller transform untuk distribusi normal
+        let arr = [];
+        for (let i = 0; i < maxPoints; i++) {
+            let u1 = Math.random();
+            let u2 = Math.random();
+            // standard normal variable
+            let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+            // scale and shift
+            let val = Math.round(targetMean + z0 * targetStd);
+            
+            // Batasi nilai agar tetap di rentang logis [5, 105]
+            val = Math.max(5, Math.min(105, val));
+            arr.push(val);
+        }
+        
+        inputs.forEach((input, index) => {
+            input.value = arr[index];
         });
+        
         document.getElementById("lslInput").value = "25"; 
         document.getElementById("uslInput").value = "85";
         updateChart(); 

@@ -657,6 +657,10 @@
                 <span class="desktop-text">📉 Control Chart</span>
                 <span class="mobile-text">📉 Kontrol</span>
             </button>
+            <button class="nav-btn" onclick="openModule('pareto')">
+                <span class="desktop-text">📊 Pareto Diagram</span>
+                <span class="mobile-text">📊 Pareto</span>
+            </button>
         </div>
 
         <div class="content-area">
@@ -901,6 +905,86 @@
                 </div>
             </div>
 
+            <div id="pareto" class="module-section">
+                <h2 class="mod-title">Diagram Pareto</h2>
+                
+                <div class="slide-container" id="slide-pareto">
+                    <div class="slide active-slide">
+                        <h3>💡 Slide 1: Konsep Dasar Diagram Pareto</h3>
+                        <div class="theory-content">
+                            <div class="info-box detail-card">
+                                <h4>🔍 Penjelasan Komprehensif</h4>
+                                <p>Diagram Pareto adalah alat grafis yang mengurutkan kategori masalah dari frekuensi tertinggi hingga terendah untuk mengidentifikasi kontributor utama. Alat ini didasarkan pada <b>Prinsip Pareto (Aturan 80/20)</b>, yang menyatakan bahwa sekitar 80% akibat disebabkan oleh 20% penyebab utama (<i>Vital Few</i>), sedangkan sisanya 20% akibat disebabkan oleh 80% penyebab lainnya (<i>Trivial Many</i>).<br><br><b>Contoh Kasus di Pabrik:</b> Jika terdapat puluhan jenis cacat produk yang membuat klaim garansi melonjak, Anda tidak perlu memperbaiki semuanya sekaligus. Dengan memplot data ke dalam Diagram Pareto, Anda akan menemukan bahwa 1 atau 2 jenis cacat saja (misalnya "Kebocoran" atau "Penyok") sudah menyumbang 80% dari total klaim. Fokus memperbaiki 2 masalah ini akan menyelesaikan sebagian besar kerugian.</p>
+                            </div>
+                            <div class="info-box success detail-card">
+                                <h4>🎯 Manfaat Utama & Efisiensi Solusi</h4>
+                                <p>Manfaat utamanya adalah membantu tim memprioritaskan masalah secara ilmiah sehingga alokasi waktu, tenaga, dan biaya menjadi sangat efektif. Dengan memilah faktor <b>Vital Few</b> dari <b>Trivial Many</b>, kita menghindari pemborosan sumber daya pada masalah-masalah kecil yang tidak memberikan dampak perbaikan yang signifikan jika diselesaikan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slide">
+                        <h3>🕹️ Slide 2: Prioritas & Simulasi Data</h3>
+                        <p class="sim-instruction" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 10px;">Pelajari dampak konsentrasi masalah pada Diagram Pareto melalui tombol simulasi di bawah.</p>
+                        <div class="simulator-box">
+                            <div class="sim-controls">
+                                <button class="sim-btn-act active" onclick="updateParetoSim('dominan', this)">Cacat Dominan (Vital Few) <span>🎯</span></button>
+                                <button class="sim-btn-act" onclick="updateParetoSim('merata', this)">Distribusi Merata (Flat) <span>🏔️</span></button>
+                                <button class="sim-btn-act" onclick="updateParetoSim('ekstrem', this)">Penyebab Tunggal Ekstrem <span>🔥</span></button>
+                            </div>
+                            <div class="sim-chart-container"><canvas id="simParetoChart"></canvas></div>
+                        </div>
+                        <div class="info-box warning desc-box-sim" id="desc-pareto">
+                            <h4>🎯 Pola Cacat Dominan (Vital Few)</h4>
+                            <p>Sekitar 85% masalah disumbangkan oleh 2 kategori saja (Goresan & Penyok). Fokus tindakan perbaikan pada 2 masalah dominan ini akan langsung memangkas mayoritas kegagalan kualitas.</p>
+                        </div>
+                    </div>
+
+                    <div class="slide">
+                        <h3>⚙️ Slide 3: Panduan Pembuatan (Manual vs Sistem)</h3>
+                        <div class="table-content">
+                            <table class="comparison-table">
+                                <tr>
+                                    <th>Membuat Secara Manual (Excel)</th>
+                                    <th>Menggunakan DX Platform (Web Ini)</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <ul>
+                                            <li>Urutkan tabel data kategori cacat dari frekuensi terbesar ke terkecil.</li>
+                                            <li>Tambahkan kolom persentase kumulatif dengan rumus: (Jumlah Berjalan / Total Keseluruhan) x 100%.</li>
+                                            <li>Blok data kategori, frekuensi, dan persentase kumulatif, lalu buat grafik bertumpuk.</li>
+                                            <li>Ubah jenis diagram seri persentase kumulatif menjadi grafik garis (Line) dan aktifkan opsi <b>Secondary Axis</b> (Sumbu Kanan) secara manual di Excel.</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Buka alat <b>Pareto Diagram</b> di Dashboard web.</li>
+                                            <li>Salin tabel frekuensi cacat dari Excel, lalu tempelkan langsung ke kotak input data web.</li>
+                                            <li>Sistem secara otomatis mengurutkan frekuensi, menghitung persentase kumulatif secara real-time, menggambar grafik mixed sumbu ganda, serta **langsung menandai daerah prioritas perbaikan (Vital Few)**.</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="action-btns">
+                            <a href="pareto.html" class="btn-navigate">🚀 Praktek Tool Pareto Diagram</a>
+                            <button class="export-btn" onclick="exportToPDFNative('pareto', 'Modul_Diagram_Pareto')">📄 Download Modul Bab Ini (PDF)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slide-controls">
+                    <button class="slide-btn" onclick="changeSlide('pareto', -1)">⬅️ Sebelumnya</button>
+                    <div class="slide-dots" id="dots-pareto">
+                        <div class="dot active" onclick="goToSlide('pareto', 0)"></div>
+                        <div class="dot" onclick="goToSlide('pareto', 1)"></div>
+                        <div class="dot" onclick="goToSlide('pareto', 2)"></div>
+                    </div>
+                    <button class="slide-btn" onclick="changeSlide('pareto', 1)">Selanjutnya ➡️</button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -923,7 +1007,7 @@
         const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)";
         const textColor = isDark ? "#94a3b8" : "#6b7280";
 
-        [simScatter, simHist, simCtrl].forEach(chart => {
+        [simScatter, simHist, simCtrl, simPareto].forEach(chart => {
             if (chart) {
                 if (chart.options.scales) {
                     Object.keys(chart.options.scales).forEach(scaleKey => {
@@ -933,6 +1017,11 @@
                         if (!scale.ticks) scale.ticks = {};
                         scale.ticks.color = textColor;
                     });
+                }
+                if (chart === simPareto) {
+                    chart.data.datasets[1].backgroundColor = isDark ? '#5c7aff' : '#4361ee';
+                    chart.data.datasets[0].borderColor = isDark ? '#f87171' : '#ef233c';
+                    chart.data.datasets[0].backgroundColor = isDark ? '#f87171' : '#ef233c';
                 }
                 chart.update('none');
             }
@@ -950,7 +1039,7 @@
     // ----------------------------------------------------
     // SYSTEM: SLIDE LOGIC
     // ----------------------------------------------------
-    const slideState = { scatter: 0, histogram: 0, control: 0 };
+    const slideState = { scatter: 0, histogram: 0, control: 0, pareto: 0 };
 
     function changeSlide(moduleId, direction) {
         const slides = document.querySelectorAll(`#slide-${moduleId} .slide`);
@@ -978,7 +1067,7 @@
     // ----------------------------------------------------
     // SYSTEM: CHARTS & SIMULATOR
     // ----------------------------------------------------
-    let simScatter, simHist, simCtrl;
+    let simScatter, simHist, simCtrl, simPareto;
 
     function initCharts() {
         const customBg = {
@@ -1024,9 +1113,69 @@
             plugins: [customBg]
         });
 
+        const paretoCtx = document.getElementById('simParetoChart').getContext('2d');
+        simPareto = new Chart(paretoCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Kumulatif (%)',
+                        data: [],
+                        borderColor: '#ef233c',
+                        backgroundColor: '#ef233c',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        yAxisID: 'y1',
+                        order: 1
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Frekuensi',
+                        data: [],
+                        backgroundColor: '#4361ee',
+                        borderRadius: 4,
+                        yAxisID: 'y',
+                        order: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    customCanvasBackgroundColor: { color: 'transparent' }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        ticks: { beginAtZero: true }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            callback: function(value) { return value + "%" }
+                        }
+                    }
+                }
+            },
+            plugins: [customBg]
+        });
+
         updateScatterSim('positif', document.querySelector('#scatter .sim-btn-act.active'));
         updateHistSim('normal', document.querySelector('#histogram .sim-btn-act.active'));
         updateCtrlSim('normal', document.querySelector('#control .sim-btn-act.active'));
+        updateParetoSim('dominan', document.querySelector('#pareto .sim-btn-act.active'));
     }
 
     function updateScatterSim(type, btn) {
@@ -1091,6 +1240,54 @@
         else descBox.innerHTML = "<h4>📈 Pola Menanjak / Menurun (Trend)</h4><p>Minimal 6 titik naik konstan mirip pola tangga. Ini ciri keausan fisik. Misalnya bantalan pahat yang makin lama makin aus, atau suhu mesin memanas pelan-pelan.</p>";
     }
 
+    function updateParetoSim(type, btn) {
+        document.querySelectorAll('#pareto .sim-btn-act').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        const descBox = document.getElementById('desc-pareto');
+
+        let labels = [];
+        let freqs = [];
+        let cumPercents = [];
+
+        if (type === 'dominan') {
+            labels = ["Goresan", "Penyok", "Retak", "Kotor", "Bocor"];
+            freqs = [60, 25, 10, 4, 1];
+        } else if (type === 'merata') {
+            labels = ["Goresan", "Penyok", "Retak", "Kotor", "Bocor"];
+            freqs = [22, 21, 20, 19, 18];
+        } else if (type === 'ekstrem') {
+            labels = ["Bocor", "Goresan", "Penyok", "Retak", "Kotor"];
+            freqs = [95, 2, 1, 1, 1];
+        }
+
+        let total = freqs.reduce((a, b) => a + b, 0);
+        let currentSum = 0;
+        freqs.forEach(val => {
+            currentSum += val;
+            cumPercents.push((currentSum / total) * 100);
+        });
+
+        simPareto.options.scales.y.max = total;
+        simPareto.data.labels = labels;
+        simPareto.data.datasets[1].data = freqs;
+        simPareto.data.datasets[0].data = cumPercents;
+        
+        let isDark = document.body.classList.contains('dark-mode');
+        simPareto.data.datasets[1].backgroundColor = isDark ? '#5c7aff' : '#4361ee';
+        simPareto.data.datasets[0].borderColor = isDark ? '#f87171' : '#ef233c';
+        simPareto.data.datasets[0].backgroundColor = isDark ? '#f87171' : '#ef233c';
+        
+        simPareto.update('none');
+
+        if(type==='dominan') {
+            descBox.innerHTML = "<h4>🎯 Pola Cacat Dominan (Vital Few)</h4><p>📌 <strong>Masalah Utama:</strong> Cacat \"Goresan & Penyok\" menyumbang 85% masalah.<br>🎯 <strong>Tindakan:</strong> Fokus perbaiki 2 cacat ini saja (abaikan 3 lainnya untuk efisiensi).</p>";
+        } else if(type==='merata') {
+            descBox.innerHTML = "<h4>🏔️ Pola Distribusi Merata (Flat)</h4><p>📌 <strong>Masalah Utama:</strong> Cacat menyebar rata tanpa dominasi tunggal.<br>🎯 <strong>Tindakan:</strong> Audit SOP kerja, periksa kualitas bahan baku supplier, dan latih ulang tim.</p>";
+        } else {
+            descBox.innerHTML = "<h4>🔥 Pola Penyebab Tunggal Ekstrem</h4><p>📌 <strong>Masalah Utama:</strong> Cacat \"Bocor\" menyumbang 95% masalah.<br>🎯 <strong>Tindakan:</strong> Hentikan/periksa segera lini pemicu kebocoran.</p>";
+        }
+    }
+
     // ----------------------------------------------------
     // SYSTEM: NATIVE PRINT TO PDF (100% BEBAS DARI BLANK)
     // ----------------------------------------------------
@@ -1145,6 +1342,13 @@
                     {type: 'outlier', label: '2. Pola Deteksi Titik Ekstrem (Outlier)'},
                     {type: 'shift', label: '3. Pola Deteksi Pergeseran Rata-rata (Shift)'},
                     {type: 'trend', label: '4. Pola Deteksi Kerusakan Bertahap (Trend)'}
+                ];
+            } else if (modId === 'pareto') {
+                chartInstance = simPareto; originalFunc = updateParetoSim;
+                states = [
+                    {type: 'dominan', label: '1. Pola Cacat Dominan (Vital Few)'},
+                    {type: 'merata', label: '2. Pola Distribusi Merata (Flat)'},
+                    {type: 'ekstrem', label: '3. Pola Penyebab Tunggal Ekstrem'}
                 ];
             }
 
@@ -1217,11 +1421,13 @@
                     <div class="print-cover-title">Buku Saku QCC Tools</div>
                     <div class="print-cover-subtitle">Modul: ${prettyTitle}</div>
                     
-                    <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; align-items: center;">
+                    <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap;">
                         <span style="font-size: 12px; background: rgba(0, 80, 239, 0.08); color: #0050ef; padding: 6px 14px; border-radius: 20px; font-weight: 600;">Scatter Diagram</span>
                         <span style="font-size: 12px; background: rgba(46, 196, 182, 0.08); color: #2ec4b6; padding: 6px 14px; border-radius: 20px; font-weight: 600;">Histogram</span>
                         <span style="font-size: 12px; background: rgba(239, 35, 96, 0.08); color: #ef233c; padding: 6px 14px; border-radius: 20px; font-weight: 600;">Control Chart</span>
+                        <span style="font-size: 12px; background: rgba(67, 97, 238, 0.08); color: #4361ee; padding: 6px 14px; border-radius: 20px; font-weight: 600;">Pareto Diagram</span>
                     </div>
+
 
                     <div class="print-cover-meta">
                         Disusun oleh:<br>
@@ -1290,6 +1496,7 @@
                 if(simScatter) simScatter.update('none'); 
                 if(simHist) simHist.update('none'); 
                 if(simCtrl) simCtrl.update('none');
+                if(simPareto) simPareto.update('none');
             }
         }
     }

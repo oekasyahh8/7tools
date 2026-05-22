@@ -25,13 +25,18 @@
         }
 
         body.dark-mode {
-            --bg: #0f172a;
-            --text: #f8fafc; 
+            --bg-color: #0f172a;
+            --text-main: #f8fafc; 
             --text-muted: #cbd5e1;
             --card-bg: #1e293b;
             --result-bg: #0f172a;
             --border-color: #334155;
             --input-bg: #020617;
+            --primary: #5c7aff;
+            --primary-hover: #4361ee;
+            --success: #4ade80;
+            --danger: #f87171;
+            --warning: #fbbf24;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -360,6 +365,13 @@
     // --- INISIALISASI INPUT ---
     const inputContainer = document.getElementById("inputContainer");
     const maxRows = 10;
+    const defaultData = [
+        { label: "Goresan", freq: 55 },
+        { label: "Penyok", freq: 30 },
+        { label: "Retak", freq: 15 },
+        { label: "Kotor", freq: 8 },
+        { label: "Lain-lain", freq: 4 }
+    ];
 
     for(let i = 1; i <= maxRows; i++) {
         let row = document.createElement("div");
@@ -369,6 +381,9 @@
         labelInput.type = "text";
         labelInput.className = "data-input";
         labelInput.placeholder = "Kategori " + i;
+        if (i - 1 < defaultData.length) {
+            labelInput.value = defaultData[i - 1].label;
+        }
         labelInput.oninput = updateChart;
 
         let freqInput = document.createElement("input");
@@ -376,6 +391,9 @@
         freqInput.className = "data-input num";
         freqInput.placeholder = "0";
         freqInput.min = "0";
+        if (i - 1 < defaultData.length) {
+            freqInput.value = defaultData[i - 1].freq;
+        }
         freqInput.oninput = updateChart;
 
         row.appendChild(labelInput);
@@ -479,11 +497,14 @@
                     type: 'linear', position: 'right', 
                     title: { display: true, text: 'Persentase (%)', font: {family: 'Poppins', size: 11}, color: '#4b5563' },
                     grid: { drawOnChartArea: false }, 
-                    ticks: { color: '#111827', font: {family: 'Poppins', size: 10}, min: 0, max: 100, stepSize: 20, callback: function(value) { return value + "%" } } 
+                    ticks: { color: '#111827', font: {family: 'Poppins', size: 10}, min: 0, max: 100, stepSize: 20, callback: function(value) { return value + "%" } }
                 }
             }
         }
     });
+
+    // Render chart with default data on load
+    updateChart();
 
     // --- ANIMASI FLOATING ---
     function startFloatingEffect() {
@@ -577,8 +598,8 @@
     }
 
     function analyzePareto(data, totalFreq, cumPercents) {
-        let issues = [];
-        
+        if (!data || data.length === 0) return null;
+
         let vitalFewData = [];
         let vitalIdx = 0;
         
@@ -588,31 +609,46 @@
         }
 
         let vitalPercentage = cumPercents[vitalIdx - 1];
+        let totalCategories = data.length;
+        let vitalCount = vitalFewData.length;
 
-        if (vitalFewData.length > 0) {
-            issues.push(`
-                <span class="issue-title">1. Identifikasi "Vital Few" (Prinsip 80/20)</span>
-                Fokuskan perbaikan utama pada masalah: <b>${vitalFewData.join(', ')}</b>. Kelompok masalah ini menyumbang secara kumulatif sebesar <b>${vitalPercentage.toFixed(1)}%</b> dari total permasalahan.
-                <div class="investigation-box">
-                    <span class="investigation-icon">🎯</span>
-                    <div><strong>Aksi:</strong> Prioritaskan *brainstorming* (misal dengan Fishbone Diagram) dan perbaikan (*Countermeasure*) pada area ini untuk mendapatkan dampak efisiensi terbesar.</div>
+        let pattern = 'vital';
+        let title = '';
+        let html = '';
+
+        if (totalCategories >= 2 && cumPercents[0] >= 70) {
+            pattern = 'danger';
+            title = `🔥 Analisis: Pola Penyebab Tunggal Ekstrem`;
+            html = `
+                <div style="font-size: 12px; line-height: 1.5; color: var(--text-main);">
+                    📌 <strong>Masalah Utama:</strong> Cacat <strong>"${data[0].label}"</strong> mendominasi secara ekstrem (<strong>${cumPercents[0].toFixed(1)}%</strong>).<br>
+                    🔍 <strong>Penyebab:</strong> Gangguan fatal di satu titik (misal: mesin rusak atau kelalaian operator).<br>
+                    🎯 <strong>Tindakan:</strong> Hentikan/periksa lini terkait cacat <strong>"${data[0].label}"</strong>. Abaikan jenis cacat lainnya.
                 </div>
-            `);
+            `;
+        } else if (vitalCount / totalCategories <= 0.45 || vitalCount <= 2) {
+            pattern = 'success';
+            title = `🎯 Analisis: Pola Vital Few (Aturan 80/20)`;
+            html = `
+                <div style="font-size: 12px; line-height: 1.5; color: var(--text-main);">
+                    📌 <strong>Masalah Utama:</strong> Kategori <strong>"${vitalFewData.join(', ')}"</strong> menyumbang <strong>${vitalPercentage.toFixed(1)}%</strong> cacat.<br>
+                    🔍 <strong>Penyebab:</strong> Hanya sedikit cacat yang menjadi pemicu utama kegagalan (Hukum 80/20).<br>
+                    🎯 <strong>Tindakan:</strong> Fokuskan perbaikan hanya pada <strong>"${vitalFewData.join(' & ')}"</strong>. Tunda masalah kecil lainnya.
+                </div>
+            `;
+        } else {
+            pattern = 'warning';
+            title = `🏔️ Analisis: Pola Flat (Masalah Sistemik)`;
+            html = `
+                <div style="font-size: 12px; line-height: 1.5; color: var(--text-main);">
+                    📌 <strong>Masalah Utama:</strong> Seluruh kategori cacat tersebar merata, tidak ada yang menonjol.<br>
+                    🔍 <strong>Penyebab:</strong> Gangguan sistemik umum (misal: bahan baku supplier turun kualitas, atau kurang pelatihan).<br>
+                    🎯 <strong>Tindakan:</strong> Jangan perbaiki per jenis cacat. Audit SOP dasar, periksa supplier, atau latih ulang operator.
+                </div>
+            `;
         }
 
-        if (data.length > 3) {
-            let trivialManyCount = data.length - vitalFewData.length;
-            issues.push(`
-                <span class="issue-title">2. Kategori "Trivial Many"</span>
-                Terdapat ${trivialManyCount} kategori masalah lain yang kontribusinya relatif kecil.
-                <div class="investigation-box">
-                    <span class="investigation-icon">⏳</span>
-                    <div><strong>Aksi:</strong> Masalah ini dapat ditunda penyelesaiannya sampai "Vital Few" berhasil diatasi. Cukup lakukan monitoring standar.</div>
-                </div>
-            `);
-        }
-
-        return issues;
+        return { pattern, title, html };
     }
 
     function updateConclusion(data, totalFreq, cumPercents) {
@@ -628,16 +664,11 @@
             return;
         }
 
-        let issues = analyzePareto(data, totalFreq, cumPercents);
+        let analysis = analyzePareto(data, totalFreq, cumPercents);
 
-        box.classList.add('success');
-        icon.innerHTML = "✅ Analisis Pareto Tersedia";
-        
-        let issuesHTML = `<ul class="issues-list">`;
-        issues.forEach(issue => { issuesHTML += `<li>${issue}</li>`; });
-        issuesHTML += `</ul>`;
-
-        text.innerHTML = `Sistem telah mengurutkan masalah berdasarkan prioritas: ${issuesHTML}`;
+        box.classList.add(analysis.pattern);
+        icon.innerHTML = analysis.title;
+        text.innerHTML = analysis.html;
     }
 
     function randomizeData() {
@@ -647,12 +678,34 @@
         // Acak jumlah data yang mau diisi (5 sampai 10)
         let numData = Math.floor(Math.random() * 6) + 5;
         
+        // Tentukan pola acak secara merata: 0 = Vital Few, 1 = Ekstrem, 2 = Flat
+        let patternType = Math.floor(Math.random() * 3);
+        
+        let freqs = [];
+        if (patternType === 0) {
+            // Pola Vital Few (1-2 item mendominasi)
+            for (let i = 0; i < numData; i++) {
+                if (i === 0) freqs.push(Math.floor(Math.random() * 40) + 60); // 60 - 100
+                else if (i === 1) freqs.push(Math.floor(Math.random() * 20) + 25); // 25 - 45
+                else freqs.push(Math.floor(Math.random() * 8) + 1); // 1 - 9
+            }
+        } else if (patternType === 1) {
+            // Pola Ekstrem (1 item super dominan)
+            for (let i = 0; i < numData; i++) {
+                if (i === 0) freqs.push(Math.floor(Math.random() * 50) + 90); // 90 - 140
+                else freqs.push(Math.floor(Math.random() * 4) + 1); // 1 - 5
+            }
+        } else {
+            // Pola Flat (Merata)
+            for (let i = 0; i < numData; i++) {
+                freqs.push(Math.floor(Math.random() * 30) + 30); // 30 - 60
+            }
+        }
+        
         inputRows.forEach((row, i) => {
             if(i < numData) {
                 row.children[0].value = categories[i];
-                // Random frekuensi (bikin variatif biar paretosnya bagus)
-                let base = Math.floor(Math.random() * 100) + 10;
-                row.children[1].value = base;
+                row.children[1].value = freqs[i];
             } else {
                 row.children[0].value = "";
                 row.children[1].value = "";
@@ -698,6 +751,10 @@
             paretoChart.options.scales.y.title.color = '#cbd5e1';
             paretoChart.options.scales.y1.title.color = '#cbd5e1';
             paretoChart.options.plugins.legend.labels.color = '#f8fafc';
+            // Update dataset colors for dark mode
+            paretoChart.data.datasets[0].borderColor = '#f87171';
+            paretoChart.data.datasets[0].backgroundColor = '#f87171';
+            paretoChart.data.datasets[1].backgroundColor = '#5c7aff';
         } else {
             document.body.classList.remove('dark-mode');
             paretoChart.options.scales.x.ticks.color = '#111827';
@@ -707,6 +764,10 @@
             paretoChart.options.scales.y.title.color = '#4b5563';
             paretoChart.options.scales.y1.title.color = '#4b5563';
             paretoChart.options.plugins.legend.labels.color = '#111827';
+            // Restore dataset colors for light mode
+            paretoChart.data.datasets[0].borderColor = '#ef233c';
+            paretoChart.data.datasets[0].backgroundColor = '#ef233c';
+            paretoChart.data.datasets[1].backgroundColor = '#4361ee';
         }
         paretoChart.update('none');
     }

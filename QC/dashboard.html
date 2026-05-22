@@ -327,35 +327,35 @@
     .quiz-result p { font-size: 15px; color: var(--text-main); font-weight: 500;}
 
     /* ===== MAIN CONTAINER & GRID ===== */
-    .container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 30px 5% 60px; position: relative; z-index: 1;}
-    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; width: 100%; max-width: 1100px; }
+    .container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 5% 50px; position: relative; z-index: 1;}
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 800px; }
 
     /* ===== CARD ===== */
     .card {
-      background: var(--card-bg); border-radius: 20px; padding: 40px 30px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05); cursor: pointer; position: relative; overflow: hidden;
+      background: var(--card-bg); border-radius: 16px; padding: 25px 20px; text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04); cursor: pointer; position: relative; overflow: hidden;
       border: 1px solid var(--card-border); transition: all 0.4s ease; display: flex; flex-direction: column; align-items: center;
     }
     .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #0050ef, #0022a3); transition: 0.3s; }
-    .card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); border-color: #0050ef; }
-    .card:hover::before { height: 6px; }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); border-color: #0050ef; }
+    .card:hover::before { height: 5px; }
 
-    .live-icon-container { width: 100px; height: 100px; margin-bottom: 20px; position: relative; display: flex; justify-content: center; align-items: center; }
-    .static-icon { width: 80px; height: 80px; transition: 0.3s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); position: absolute; }
-    .live-canvas { width: 100px !important; height: 100px !important; position: absolute; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+    .live-icon-container { width: 90px; height: 90px; margin-bottom: 15px; position: relative; display: flex; justify-content: center; align-items: center; }
+    .static-icon { width: 70px; height: 70px; transition: 0.3s ease; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); position: absolute; }
+    .live-canvas { width: 90px !important; height: 90px !important; position: absolute; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
     .card:hover .static-icon { opacity: 0; transform: scale(0.8); }
     .card:hover .live-canvas { opacity: 1; }
 
-    .card h3 { font-size: 20px; margin-bottom: 10px; color: var(--text-main); font-weight: 700; }
-    .card-text-area { position: relative; width: 100%; height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-    .card-text-area p { position: absolute; font-size: 14px; color: var(--text-muted); line-height: 1.5; transition: all 0.3s ease; width: 100%; opacity: 1; transform: translateY(0); }
-    .learning-objective { position: absolute; width: 100%; font-size: 13px; color: #0050ef; background: rgba(0, 80, 239, 0.08); padding: 12px; border-radius: 8px; opacity: 0; transform: translateY(15px); transition: all 0.3s ease; pointer-events: none; }
+    .card h3 { font-size: 17px; margin-bottom: 8px; color: var(--text-main); font-weight: 700; }
+    .card-text-area { position: relative; width: 100%; height: 75px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .card-text-area p { position: absolute; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; transition: all 0.3s ease; width: 100%; opacity: 1; transform: translateY(0); }
+    .learning-objective { position: absolute; width: 100%; font-size: 11.5px; color: #0050ef; background: rgba(0, 80, 239, 0.08); padding: 8px 10px; border-radius: 8px; opacity: 0; transform: translateY(12px); transition: all 0.3s ease; pointer-events: none; }
     body.dark-mode .learning-objective { color: #60a5fa; background: rgba(96, 165, 250, 0.15); }
     
-    .card:hover .card-text-area p { opacity: 0; transform: translateY(-15px); }
+    .card:hover .card-text-area p { opacity: 0; transform: translateY(-12px); }
     .card:hover .learning-objective { opacity: 1; transform: translateY(0); }
 
-    .badge { display: inline-block; background: #eff6ff; color: #0050ef; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 20px; margin-top: auto; }
+    .badge { display: inline-block; background: #eff6ff; color: #0050ef; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 15px; margin-top: auto; }
     body.dark-mode .badge { background: #1e3a8a; color: #bfdbfe; }
 
     /* ===== TOUR STYLES ===== */
@@ -419,12 +419,119 @@
     }
 
     /* ===== RESPONSIVE ===== */
+    @media (min-width: 993px) {
+      html {
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+      }
+      body {
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        padding: 15px 30px;
+      }
+      header {
+        height: 70px;
+        margin-bottom: 12px;
+        flex-shrink: 0;
+      }
+      .logo {
+        height: 55px;
+      }
+      .btn-header {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+      }
+      .datetime {
+        padding: 6px 15px;
+        font-size: 13px;
+      }
+      .intro {
+        padding: 5px 20px 0px;
+        flex-shrink: 0;
+      }
+      .intro h2 {
+        font-size: 20px;
+        margin-bottom: 2px;
+      }
+      .intro p {
+        font-size: 13px;
+        margin-bottom: 0px;
+      }
+      .container {
+        flex: 1;
+        padding: 5px 5% 10px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        max-width: 780px;
+        height: 100%;
+        max-height: 440px;
+        align-content: stretch;
+      }
+      .card {
+        padding: 12px 15px;
+        height: 100%;
+        justify-content: space-between;
+      }
+      .live-icon-container {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+        flex-shrink: 0;
+      }
+      .static-icon {
+        width: 45px;
+        height: 45px;
+      }
+      .live-canvas {
+        width: 60px !important;
+        height: 60px !important;
+      }
+      .card h3 {
+        font-size: 14px;
+        margin-bottom: 2px;
+        flex-shrink: 0;
+      }
+      .card-text-area {
+        height: 50px;
+        margin-bottom: 6px;
+      }
+      .card-text-area p {
+        font-size: 11.5px;
+      }
+      .learning-objective {
+        font-size: 10px;
+        padding: 4px 6px;
+      }
+      .badge {
+        font-size: 10px;
+        padding: 3px 10px;
+        margin-top: auto;
+        flex-shrink: 0;
+      }
+      footer {
+        padding: 8px;
+        font-size: 12px;
+        margin-top: 8px;
+        flex-shrink: 0;
+      }
+    }
+
     @media (max-width: 768px) {
       header { flex-direction: column; text-align: center; padding: 15px; gap: 10px; height: auto; border-radius: 12px; margin-bottom: 15px; }
       .header-controls { flex-direction: row; flex-wrap: wrap; justify-content: center; width: 100%; gap: 8px; }
       .datetime { width: 100%; text-align: center; order: -1; padding: 8px; font-size: 12px; }
       .logo { height: 60px; } 
       .intro { padding: 30px 20px 0; }
+      .menu-grid { grid-template-columns: 1fr; gap: 20px; }
       .card { padding: 30px 20px; }
       .btn-header { width: 40px; height: 40px; font-size: 18px; }
     }
@@ -464,7 +571,7 @@
   </header>
 
   <section class="intro" id="intro-section">
-    <h2>Auto 3 QCC Tools Simulation</h2>
+    <h2>Auto QCC Tools Simulation</h2>
     <p>Kuasai teknik analisis visual untuk mengidentifikasi akar masalah dan menjaga stabilitas proses.</p>
   </section>
 
@@ -507,6 +614,19 @@
           <div class="learning-objective">🎯 <strong>Fokus:</strong> Mendeteksi Out of Control (Outlier, Shift, Trend) & Root Cause Analysis.</div>
         </div>
         <span class="badge">Pemantauan Proses</span>
+      </div>
+
+      <div class="card" id="card-pareto" onclick="window.location='pareto.html'" onmouseenter="startLivePreview('pareto')" onmouseleave="stopLivePreview('pareto')">
+        <div class="live-icon-container">
+            <img class="static-icon" src="https://cdn-icons-png.flaticon.com/512/3090/3090116.png" alt="Pareto Chart">
+            <canvas id="preview-pareto" class="live-canvas"></canvas>
+        </div>
+        <h3>Pareto Diagram</h3>
+        <div class="card-text-area">
+          <p>Prioritaskan masalah terbesar berdasarkan prinsip 80/20 untuk fokus perbaikan (Vital Few vs Trivial Many).</p>
+          <div class="learning-objective">🎯 <strong>Fokus:</strong> Mengidentifikasi kontribusi kumulatif & menentukan prioritas RCA.</div>
+        </div>
+        <span class="badge">Prioritas Masalah</span>
       </div>
     </div>
   </div>
@@ -1004,6 +1124,17 @@
             config.type = 'line';
             config.data = { labels: ['1','2','3','4','5','6','7','8','9','10'], datasets: [{ data: [], borderColor: '#4361ee', fill: true, backgroundColor: 'rgba(67, 97, 238, 0.2)', tension: 0.3, pointRadius: 3 }, { data: Array(10).fill(50), borderColor: '#2ec4b6', borderDash: [4, 4], pointRadius: 0, borderWidth: 1.5 }, { data: Array(10).fill(85), borderColor: '#ef233c', borderDash: [4, 4], pointRadius: 0, borderWidth: 1.5 }] };
             config.options.scales.x.display = false; config.options.scales.y.max = 100;
+        } else if (type === 'pareto') {
+            config.type = 'bar';
+            config.data = { 
+                labels: ['A','B','C','D','E'], 
+                datasets: [
+                    { data: [50, 75, 87, 94, 100], type: 'line', borderColor: '#ef233c', borderWidth: 2, pointRadius: 0 },
+                    { data: [50, 25, 12, 7, 6], backgroundColor: '#4361ee', borderRadius: 4 }
+                ] 
+            };
+            config.options.scales.x.display = false; 
+            config.options.scales.y.max = 100;
         }
         return new Chart(ctx, config);
     }
@@ -1011,6 +1142,7 @@
     chartPreviews['scatter'] = initChart('scatter', 'preview-scatter');
     chartPreviews['histogram'] = initChart('histogram', 'preview-histogram');
     chartPreviews['control'] = initChart('control', 'preview-control');
+    chartPreviews['pareto'] = initChart('pareto', 'preview-pareto');
 
     function startLivePreview(type) {
         if (animationIntervals[type]) clearInterval(animationIntervals[type]);
@@ -1038,6 +1170,26 @@
                 if (chart.data.datasets[0].data.length > 10) { chart.data.datasets[0].data.shift(); }
                 chart.update(); 
             }, 200);
+        } else if (type === 'pareto') {
+            let baseValues = [50, 25, 12, 7, 6];
+            animationIntervals[type] = setInterval(() => {
+                let fluctuated = baseValues.map((val) => {
+                    let amp = val * 0.15;
+                    let fl = val + (Math.random() * 2 * amp - amp);
+                    return Math.max(1, fl);
+                });
+                fluctuated.sort((a, b) => b - a);
+                let sum = fluctuated.reduce((a, b) => a + b, 0);
+                let cumSum = 0;
+                let cumPercent = fluctuated.map(val => {
+                    cumSum += val;
+                    return (cumSum / sum) * 100;
+                });
+                let scaledBars = fluctuated.map(val => (val / sum) * 100);
+                chart.data.datasets[0].data = cumPercent;
+                chart.data.datasets[1].data = scaledBars;
+                chart.update();
+            }, 300);
         }
     }
     function stopLivePreview(type) { if (animationIntervals[type]) { clearInterval(animationIntervals[type]); animationIntervals[type] = null; } }
